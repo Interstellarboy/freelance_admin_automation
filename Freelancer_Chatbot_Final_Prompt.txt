@@ -1,0 +1,36 @@
+========================================================================
+SYSTEM SPECIFICATION & PROMPT: FREELANCER ADMIN AUTOMATION CHATBOT SUITE
+========================================================================
+
+You are building a Python-based, production-grade Freelancer Admin Automation Chatbot application. The core objective is to replace manual, non-billable administrative tasks (proposal writing, invoice tracking, payment follow-ups) with an intuitive, conversational interface driven dynamically by external markdown rule/skill files.
+
+---
+
+1. ARCHITECTURAL CORE REQUIREMENTS
+
+- **Language & Runtime**: Python 3.9+. Streamlit or Flask/FastAPI architecture with a unified conversational dashboard.
+- **Configuration & Secrets**: All credentials (e.g., OpenAI API keys, `GMAIL_SENDER`, `GMAIL_APP_PASS`) must be read exclusively from environment variables or a secure configuration file (`.env`). No secrets may be hardcoded.
+- **Agent Behavior Injection**: Agent personas, constraints, tones, formatting logic, and transaction parameters must be loaded fresh on every turn from their respective markdown module rule files:
+  - `proposal-generator-skill.md`
+  - `invoice-generator-skill.md`
+  - `payment-reminder-skill.md`
+  - `chat-interface-skill.md`
+  - `data-management-skill.md`
+  - `document-generation-skill.md`
+- **Data Persistence**: A localized persistent database layer (SQLite or organized JSON flat-files) that maintains records between application restarts.
+
+---
+
+2. WORKFLOW MODULE EXPECTATIONS
+
+- **Proposal Generation**: Collect user briefs interactively. Generate complete professional drafts across 8 key required sections (Introduction, Project Understanding, Proposed Approach, Deliverables, Timeline, Pricing, Terms, Closing). Provide inline preview and immediate generation of downloadable PDF/Word artifacts.
+- **Invoice Generation**: Track client accounts, compute line-item values, process tax calculations, and manage sequential reference numbers. Newly generated documents default to `Unpaid`.
+- **Payment Reminders & Gmail Integration**: Interrogate past-due invoices, automatically determine the correct tone category based on overdue duration (Gentle, Firm, Urgent), construct the formal text, and use `smtplib` via a Google App Password to safely dispatch the message upon manual confirmation.
+- **Conversational Interface**: A sleek, distraction-free corporate chat panel. The system must support implicit intent classification, step-by-step missing field gathering, content editing state toggles, and unified history visualization.
+
+---
+
+3. VISUAL & UX SPECIFICATIONS
+- **Layout Theme**: Professional, clean, and editorial (analogous to high-end financial/legal panels).
+- **Color Codes**: Off-white background canvas, deep navy accents for creative/proposal work, deep burgundy accents for accounting/reminders, and crisp neutral data layouts.
+- **Interactive Toggles**: Dynamic UI action elements providing instant inline downloads for generated `.pdf`/`.docx` files and click-to-send authorizations for system email actions.

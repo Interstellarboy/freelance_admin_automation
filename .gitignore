@@ -1,0 +1,28 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database
+freelancer_admin.db
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+API.txt
+
+# Generated document previews & test files
+active_proposal.pdf
+active_proposal.docx
+active_invoice.pdf
+active_invoice.docx
+test_proposal.pdf
+test_proposal.docx
+test_invoice.pdf
+test_invoice.docx
+
+# Streamlit configurations
+.streamlit/
