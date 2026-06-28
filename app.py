@@ -512,10 +512,12 @@ def execute_system_action(command):
 
 
 # ================= SIDEBAR LAYOUT (SETTINGS & STATUS) =================
-if os.path.exists("masaiboyz.png"):
+if os.path.exists("logo.jpg"):
+    st.sidebar.image("logo.jpg", use_container_width=True)
+elif os.path.exists("masaiboyz.png"):
     st.sidebar.image("masaiboyz.png", width=120)
 else:
-    st.sidebar.title("🧙‍♂️ Admin Automator")
+    st.sidebar.title("🧙‍♂️ LancerFlow Automator")
 
 with st.sidebar:
     
@@ -591,7 +593,15 @@ with st.sidebar:
 
 
 # ================= MAIN PAGE SPLIT-SCREEN LAYOUT =================
-st.title("Freelancer Operations Orchestrator")
+if os.path.exists("logo.jpg"):
+    col_l, col_t = st.columns([0.15, 0.85])
+    with col_l:
+        st.image("logo.jpg", use_container_width=True)
+    with col_t:
+        st.title("LancerFlow Operations Orchestrator")
+else:
+    st.title("Freelancer Operations Orchestrator")
+
 st.markdown("Manage your freelance administration conversationally. View real-time results in the live layout panel.")
 
 col_chat, col_canvas = st.columns([1, 1])
