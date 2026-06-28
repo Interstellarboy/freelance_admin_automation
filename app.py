@@ -15,7 +15,28 @@ import doc_compiler
 database.init_db()
 
 # Load env variables
-load_dotenv()
+load_dotenv(override=True)
+
+# Helper to save settings to .env
+def save_settings_to_env(openai_key, openai_model, gmail_sender, gmail_pass, freelancer_name, freelancer_email, freelancer_bank):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(base_dir, ".env")
+    content = f"""OPENAI_API_KEY={openai_key}
+OPENAI_MODEL={openai_model}
+GMAIL_SENDER={gmail_sender}
+GMAIL_APP_PASS={gmail_pass}
+FREELANCER_NAME={freelancer_name}
+FREELANCER_EMAIL={freelancer_email}
+FREELANCER_BANK_DETAILS={freelancer_bank}
+"""
+    try:
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        # Reload env variables override
+        load_dotenv(env_path, override=True)
+        return True, "Settings saved successfully to .env!"
+    except Exception as e:
+        return False, f"Failed to save settings: {str(e)}"
 
 # Set page configurations
 st.set_page_config(
@@ -30,136 +51,172 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 html, body, [data-testid="stAppViewContainer"] {
-    background-color: #F8F9FB;
     font-family: 'Inter', sans-serif;
-    color: #2D3748;
 }
 
 [data-testid="stHeader"] {
     background: rgba(0,0,0,0);
 }
 
-/* Sidebar Custom Styling */
-[data-testid="stSidebar"] {
-    background-color: #0F172A;
-}
+/* Sidebar Custom Typography */
 [data-testid="stSidebar"] .stMarkdown h1, 
 [data-testid="stSidebar"] .stMarkdown h2, 
 [data-testid="stSidebar"] .stMarkdown h3,
 [data-testid="stSidebar"] label {
-    color: #F1F5F9 !important;
     font-family: 'Outfit', sans-serif;
+}
+
+/* entry fade-in animations for smooth dynamic experience */
+@keyframes fadeInEntry {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Card layout systems */
 .proposal-card {
-    border-left: 5px solid #1A2E40;
-    background-color: #FFFFFF;
+    border-left: 5px solid #4F46E5; /* Modern Indigo */
+    background-color: var(--secondary-background-color, #FFFFFF);
+    color: var(--text-color, #1F2937);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(26, 46, 64, 0.08);
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+    border-right: 1px solid rgba(128, 128, 128, 0.15);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.proposal-card p, .proposal-card b, .proposal-card strong, .proposal-card li, .proposal-card span:not([class^="badge-"]) {
+    color: var(--text-color, #1F2937) !important;
 }
 .proposal-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(26, 46, 64, 0.12);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.15);
+    border-color: rgba(79, 70, 229, 0.3);
 }
 .proposal-header {
-    color: #1A2E40;
+    color: #4F46E5 !important;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
     font-size: 1.35rem;
-    border-bottom: 2px solid #E2E8F0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
 }
 
 .invoice-card {
-    border-left: 5px solid #7A1C1C;
-    background-color: #FFFFFF;
+    border-left: 5px solid #10B981; /* Modern Emerald */
+    background-color: var(--secondary-background-color, #FFFFFF);
+    color: var(--text-color, #1F2937);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(122, 28, 28, 0.08);
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+    border-right: 1px solid rgba(128, 128, 128, 0.15);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.invoice-card p, .invoice-card b, .invoice-card strong, .invoice-card li, .invoice-card span:not([class^="badge-"]) {
+    color: var(--text-color, #1F2937) !important;
 }
 .invoice-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(122, 28, 28, 0.12);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
 }
 .invoice-header {
-    color: #7A1C1C;
+    color: #10B981 !important;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
     font-size: 1.35rem;
-    border-bottom: 2px solid #E2E8F0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
 }
 
 .reminder-card {
-    border-left: 5px solid #D97706;
-    background-color: #FFFBEB;
+    border-left: 5px solid #F59E0B; /* Modern Amber */
+    background-color: var(--secondary-background-color, #FFFFFF);
+    color: var(--text-color, #1F2937);
     padding: 1.2rem;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.05);
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+    border-right: 1px solid rgba(128, 128, 128, 0.15);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
+    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.reminder-card p, .reminder-card b, .reminder-card strong, .reminder-card li, .reminder-card span:not([class^="badge-"]) {
+    color: var(--text-color, #1F2937) !important;
 }
 .reminder-header {
-    color: #B45309;
+    color: #D97706 !important;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
     font-size: 1.25rem;
-    border-bottom: 1px solid #FCD34D;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
     padding-bottom: 0.5rem;
     margin-bottom: 0.75rem;
 }
 
 /* Badge status indicators */
 .badge-paid {
-    background-color: #DEF7EC;
-    color: #03543F;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10B981;
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid #BCF0DA;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 .badge-unpaid {
-    background-color: #FEF3C7;
-    color: #92400E;
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #D97706;
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid #FDE68A;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 .badge-overdue {
-    background-color: #FDE8E8;
-    color: #9B1C1C;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid #FBD5D5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* Chat Bubbles */
 .chat-bubble-user {
-    background-color: #E2E8F0;
-    color: #1A202C;
+    background-color: #3B82F6; /* Brand Blue */
+    color: #FFFFFF !important;
     padding: 0.75rem 1rem;
     border-radius: 12px 12px 0 12px;
     margin-bottom: 0.75rem;
     max-width: 80%;
     margin-left: auto;
     font-size: 0.95rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    animation: fadeInEntry 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.chat-bubble-user * {
+    color: #FFFFFF !important;
 }
 .chat-bubble-assistant {
-    background-color: #FFFFFF;
-    color: #2D3748;
+    background-color: var(--secondary-background-color, #FFFFFF);
+    color: var(--text-color, #2D3748);
     padding: 1rem 1.25rem;
     border-radius: 12px 12px 12px 0;
     margin-bottom: 0.75rem;
@@ -167,8 +224,12 @@ html, body, [data-testid="stAppViewContainer"] {
     margin-right: auto;
     font-size: 0.95rem;
     box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-    border: 1px solid #E2E8F0;
+    border: 1px solid rgba(128, 128, 128, 0.2);
     line-height: 1.5;
+    animation: fadeInEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.chat-bubble-assistant p, .chat-bubble-assistant b, .chat-bubble-assistant strong, .chat-bubble-assistant span, .chat-bubble-assistant li {
+    color: var(--text-color, #2D3748) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -474,6 +535,48 @@ with st.sidebar:
     
     st.markdown("---")
     
+    # Credentials Status Summary
+    openai_key_status = "🟢 Configured" if st.session_state.openai_api_key else "🔴 Missing"
+    gmail_creds_status = "🟢 Configured" if st.session_state.gmail_sender and st.session_state.gmail_app_pass else "🔴 Missing"
+    
+    st.subheader("System Status")
+    st.markdown(f"""
+    * **OpenAI API Key**: {openai_key_status}
+    * **Gmail SMTP**: {gmail_creds_status}
+    """)
+    
+    # Collapsible Settings Expander
+    with st.expander("⚙️ Credentials & Settings", expanded=False):
+        st.subheader("System Credentials")
+        st.text_input("OpenAI API Key", type="password", key="openai_api_key")
+        st.text_input("OpenAI Model", key="openai_model")
+        
+        st.subheader("Gmail Mailer Credentials")
+        st.text_input("Gmail Sender Address", key="gmail_sender")
+        st.text_input("Gmail App Password (16 chars)", type="password", key="gmail_app_pass")
+        
+        st.subheader("Freelancer Defaults")
+        st.text_input("Freelancer Business Name", key="freelancer_name")
+        st.text_input("Freelancer Contact Email", key="freelancer_email")
+        st.text_area("Freelancer Payment (Bank) Info", key="freelancer_bank", height=80)
+        
+        if st.button("💾 Save Settings to .env", use_container_width=True):
+            success, msg = save_settings_to_env(
+                st.session_state.openai_api_key,
+                st.session_state.openai_model,
+                st.session_state.gmail_sender,
+                st.session_state.gmail_app_pass,
+                st.session_state.freelancer_name,
+                st.session_state.freelancer_email,
+                st.session_state.freelancer_bank
+            )
+            if success:
+                st.success(msg)
+            else:
+                st.error(msg)
+                
+    st.markdown("---")
+    
     # Active Workspace Skills Visual Indicator
     st.subheader("Loaded Skill Modules")
     skills = load_workspace_skills()
@@ -619,7 +722,7 @@ Action structures:
                 # Check API Key
                 api_key = st.session_state.openai_api_key
                 if not api_key:
-                    response_text = "⚠️ **OpenAI API Key is missing.** Please configure it in the 'Credentials & Settings' tab in the right panel to proceed."
+                    response_text = "⚠️ **OpenAI API Key is missing.** Please configure it in the 'Credentials & Settings' expander in the sidebar to proceed."
                 else:
                     client = OpenAI(api_key=api_key)
                     completion = client.chat.completions.create(
@@ -655,10 +758,9 @@ Action structures:
 with col_canvas:
     st.subheader("Live Ledger & Compiler Canvas")
     
-    tab_preview, tab_ledger, tab_settings = st.tabs([
+    tab_preview, tab_ledger = st.tabs([
         "📄 Document Canvas", 
-        "🗄️ Relational Ledger", 
-        "⚙️ Credentials & Settings"
+        "🗄️ Relational Ledger"
     ])
     
     # ---------------- TAB 1: LIVE DOCUMENT CANVAS PREVIEW ----------------
@@ -751,29 +853,52 @@ with col_canvas:
                 
                 # HTML Table Render
                 html_table = f"""
-                <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.95rem;">
+                <style>
+                .invoice-table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 15px 0;
+                    font-size: 0.95rem;
+                    color: var(--text-color, #1F2937);
+                }}
+                .invoice-table th {{
+                    background-color: #10B981;
+                    color: white;
+                    padding: 10px;
+                    border: 1px solid rgba(128, 128, 128, 0.2);
+                    text-align: left;
+                    font-weight: 600;
+                }}
+                .invoice-table td {{
+                    padding: 10px;
+                    border: 1px solid rgba(128, 128, 128, 0.2);
+                }}
+                .invoice-table tr:nth-child(even) {{
+                    background-color: rgba(128, 128, 128, 0.05);
+                }}
+                </style>
+                <table class="invoice-table">
                     <thead>
-                        <tr style="background-color: #7A1C1C; color: white; text-align: left; font-weight: bold;">
-                            <th style="padding: 10px; border: 1px solid #E2E8F0;">Work Description</th>
-                            <th style="padding: 10px; border: 1px solid #E2E8F0; text-align: right;">Hours</th>
-                            <th style="padding: 10px; border: 1px solid #E2E8F0; text-align: right;">Rate</th>
-                            <th style="padding: 10px; border: 1px solid #E2E8F0; text-align: right;">Line Total</th>
+                        <tr>
+                            <th>Work Description</th>
+                            <th style="text-align: right;">Hours</th>
+                            <th style="text-align: right;">Rate</th>
+                            <th style="text-align: right;">Line Total</th>
                         </tr>
                     </thead>
                     <tbody>
                 """
                 for idx, item in enumerate(active["work_items"]):
-                    bg = "#FDF8F8" if idx % 2 == 0 else "#F5EBEB"
                     hours = item.get("hours", 0)
                     rate = item.get("rate", 0)
                     total = hours * rate if hours > 0 else rate
                     hours_lbl = f"{hours:.2f}" if hours > 0 else "Flat"
                     html_table += f"""
-                        <tr style="background-color: {bg};">
-                            <td style="padding: 8px 10px; border: 1px solid #E2E8F0;">{item.get('description', '')}</td>
-                            <td style="padding: 8px 10px; border: 1px solid #E2E8F0; text-align: right;">{hours_lbl}</td>
-                            <td style="padding: 8px 10px; border: 1px solid #E2E8F0; text-align: right;">${rate:.2f}</td>
-                            <td style="padding: 8px 10px; border: 1px solid #E2E8F0; text-align: right;">${total:.2f}</td>
+                        <tr>
+                            <td>{item.get('description', '')}</td>
+                            <td style="text-align: right;">{hours_lbl}</td>
+                            <td style="text-align: right;">${rate:.2f}</td>
+                            <td style="text-align: right;">${total:.2f}</td>
                         </tr>
                     """
                 html_table += f"""
@@ -784,17 +909,17 @@ with col_canvas:
                 
                 # Totals block
                 st.markdown(f"""
-                <div style="text-align: right; padding-right: 10px; margin-bottom: 20px;">
+                <div style="text-align: right; padding-right: 10px; margin-bottom: 20px; color: var(--text-color, #1F2937);">
                     <p style="margin: 3px 0;">Subtotal: <b>${active['subtotal']:.2f}</b></p>
                     <p style="margin: 3px 0;">Tax ({active['tax_percentage']}%): <b>${active['tax_amount']:.2f}</b></p>
-                    <h3 style="color: #7A1C1C; margin: 5px 0;">Grand Total: ${active['grand_total']:.2f}</h3>
+                    <h3 style="color: #10B981; margin: 5px 0;">Grand Total: ${active['grand_total']:.2f}</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 # Bank instructions lower panel
                 st.markdown(f"""
-                <div style="background-color: #FDF8F8; border-left: 4px solid #7A1C1C; padding: 10px 15px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 20px;">
-                    <b style="color: #7A1C1C;">PAYMENT DETAILS:</b><br/>
+                <div style="background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid #10B981; padding: 12px 15px; border-radius: 4px; font-size: 0.88rem; margin-bottom: 20px; color: var(--text-color, #1F2937);">
+                    <b style="color: #10B981;">PAYMENT DETAILS:</b><br/>
                     {st.session_state.freelancer_bank}
                 </div>
                 """, unsafe_allow_html=True)
@@ -954,22 +1079,3 @@ with col_canvas:
                                 database.update_invoice_status(inv["id"], "paid")
                                 st.success(f"Invoice {inv['invoice_number']} marked as Paid.")
                                 st.rerun()
-
-    # ---------------- TAB 3: CREDENTIALS & SETTINGS ----------------
-    with tab_settings:
-        st.subheader("System Credentials")
-        
-        # OpenAI Config
-        st.session_state.openai_api_key = st.text_input("OpenAI API Key", st.session_state.openai_api_key, type="password")
-        st.session_state.openai_model = st.text_input("OpenAI Model", st.session_state.openai_model)
-        
-        st.subheader("Gmail Mailer Credentials")
-        st.session_state.gmail_sender = st.text_input("Gmail Sender Address", st.session_state.gmail_sender)
-        st.session_state.gmail_app_pass = st.text_input("Gmail App Password (16 chars)", st.session_state.gmail_app_pass, type="password")
-        
-        st.subheader("Freelancer Invoice Defaults")
-        st.session_state.freelancer_name = st.text_input("Freelancer Business Name", st.session_state.freelancer_name)
-        st.session_state.freelancer_email = st.text_input("Freelancer Contact Email", st.session_state.freelancer_email)
-        st.session_state.freelancer_bank = st.text_area("Freelancer Payment (Bank) Info", st.session_state.freelancer_bank, height=80)
-        
-        st.info("💡 Note: Credentials are saved within the active browser session state and fall back to the `.env` settings if available.")

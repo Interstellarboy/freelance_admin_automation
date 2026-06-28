@@ -8,7 +8,7 @@ from email import encoders
 from dotenv import load_dotenv
 
 # Load env variables if they exist (for standalone execution)
-load_dotenv()
+load_dotenv(override=True)
 
 def send_gmail(recipient_email, subject, body_text, attachment_paths=None, sender_email=None, app_password=None):
     """
