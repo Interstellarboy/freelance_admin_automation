@@ -105,6 +105,18 @@ h1, h2, h3, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownCont
     letter-spacing: -0.01em !important;
     color: #ffffff !important;
 }
+[data-testid="stMarkdownContainer"] h1 {
+    font-size: 2.0rem !important;
+    white-space: nowrap !important;
+}
+[data-testid="stMarkdownContainer"] h2 {
+    font-size: 1.4rem !important;
+    white-space: nowrap !important;
+}
+[data-testid="stMarkdownContainer"] h3 {
+    font-size: 1.1rem !important;
+    white-space: nowrap !important;
+}
 
 /* Completely hide Sidebar and Sidebar Toggle arrow button */
 [data-testid="stSidebar"], [data-testid="collapsedControl"] {
