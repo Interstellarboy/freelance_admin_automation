@@ -122,7 +122,51 @@ h1, h2, h3, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownCont
 [data-testid="stSidebar"], [data-testid="collapsedControl"] {
     display: none !important;
 }
-/* Sidebar hidden */
+
+/* Style Streamlit Tabs to look like a premium glowing Navbar */
+[data-testid="stTabBar"] {
+    background: rgba(10, 10, 15, 0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    border-radius: 30px !important;
+    padding: 6px 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 25px rgba(0, 212, 255, 0.06) !important;
+    margin-bottom: 25px !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+[data-testid="stTabBar"] button {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.25s ease !important;
+    border-radius: 20px !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 8px 20px !important;
+}
+
+[data-testid="stTabBar"] button p {
+    color: inherit !important;
+}
+
+[data-testid="stTabBar"] button:hover {
+    color: #00d4ff !important;
+    background: rgba(0, 212, 255, 0.08) !important;
+}
+
+[data-testid="stTabBar"] button[aria-selected="true"] {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #9b5de5, #4F46E5) !important;
+    box-shadow: 0 0 15px rgba(155, 93, 229, 0.4) !important;
+}
+
+/* Hide default bottom red line indicator of Streamlit tabs */
+[data-testid="stTabBar"] [data-baseweb="tab-highlight-bar"] {
+    display: none !important;
+}
 
 /* Weightless float keyframes */
 @keyframes floatBob {
@@ -616,7 +660,7 @@ def execute_system_action(command):
 # Sidebar completely removed
 
 
-# ================= MAIN PAGE SPLIT-SCREEN LAYOUT =================
+# ================= MAIN PAGE FULL-SCREEN LAYOUT =================
 if os.path.exists("logo.jpg"):
     col_l, col_t = st.columns([0.15, 0.85])
     with col_l:
@@ -626,12 +670,18 @@ if os.path.exists("logo.jpg"):
 else:
     st.title("Freelancer Operations Orchestrator")
 
-st.markdown("Manage your freelance administration conversationally. View real-time results in the live layout panel.")
+st.markdown("Manage your freelance administration conversationally. Select tabs from the navigation bar above to view live outputs.")
 
-col_chat, col_canvas = st.columns([1, 1])
+tab_chat, tab_proposal, tab_invoice, tab_reminder, tab_ledger = st.tabs([
+    "💬 Chat Assistant",
+    "📄 Proposals", 
+    "💵 Invoices", 
+    "✉️ Reminders",
+    "🗄️ Relational Ledger"
+])
 
-# ================= LEFT COLUMN: CONVERSATIONAL CHATBOT =================
-with col_chat:
+# ================= TAB: CONVERSATIONAL CHATBOT =================
+with tab_chat:
     st.subheader("Administrative Chat Interface")
     
     # Render system mutation message if present
@@ -662,7 +712,7 @@ with col_chat:
 if st.session_state.chat_history[-1]["role"] == "user":
     user_msg = st.session_state.chat_history[-1]["content"]
     
-    with col_chat:
+    with tab_chat:
         # Processing spinner
         with st.spinner("AI Agent processing rules and executing ledger transactions..."):
             try:
@@ -789,15 +839,8 @@ Action structures:
 
 
 # ================= RIGHT COLUMN: INTERACTIVE CANVAS & LEDGERS =================
-with col_canvas:
-    st.subheader("Live Ledger & Compiler Canvas")
-    
-    tab_proposal, tab_invoice, tab_reminder, tab_ledger = st.tabs([
-        "📄 Proposals", 
-        "💵 Invoices", 
-        "✉️ Reminders",
-        "🗄️ Relational Ledger"
-    ])
+import contextlib
+with contextlib.nullcontext():
     
     # ---------------- TAB 1: PROPOSALS ----------------
     with tab_proposal:
