@@ -607,21 +607,7 @@ else:
 
 with st.sidebar:
     
-    st.markdown("---")
-    
-    # Simple Status Summary
-    st.subheader("Invoice Ledger Summary")
-    invoices = database.get_invoices()
-    unpaid_count = sum(1 for i in invoices if i["status"] == "unpaid")
-    overdue_count = sum(1 for i in invoices if i["status"] == "overdue")
-    paid_count = sum(1 for i in invoices if i["status"] == "paid")
-    
-    col_u, col_o, col_p = st.columns(3)
-    col_u.metric("Unpaid", unpaid_count)
-    col_o.metric("Overdue", overdue_count, delta_color="inverse")
-    col_p.metric("Paid", paid_count)
-    
-    st.markdown("---")
+    pass
     
     # Active Workspace Skills Visual Indicator
     st.subheader("Loaded Skill Modules")
