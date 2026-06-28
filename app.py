@@ -351,6 +351,12 @@ if "freelancer_bank" not in st.session_state:
 # Active Draft Canvas state
 if "active_doc" not in st.session_state:
     st.session_state.active_doc = None  # None or Dict with 'type', 'title'/'number', 'text'/'items'
+if "active_proposal" not in st.session_state:
+    st.session_state.active_proposal = None
+if "active_invoice" not in st.session_state:
+    st.session_state.active_invoice = None
+if "active_reminder" not in st.session_state:
+    st.session_state.active_reminder = None
 
 # Database operation feedback message
 if "db_action_msg" not in st.session_state:
@@ -481,6 +487,7 @@ def execute_system_action(command):
                 "client_email": client_info["target_email"] if client_info else "",
                 "proposal_id": prop_id
             }
+            st.session_state.active_proposal = st.session_state.active_doc
             st.session_state.db_action_msg = f"📝 Drafted and compiled proposal for **{title}** (Saved to DB)."
             
         elif action == "draft_invoice":
@@ -560,6 +567,7 @@ def execute_system_action(command):
                 "pdf_path": pdf_path,
                 "docx_path": docx_path
             }
+            st.session_state.active_invoice = st.session_state.active_doc
             st.session_state.db_action_msg = f"📊 Created and compiled Invoice **{inv_number}** (Saved to DB)."
             
         elif action == "mark_invoice_paid":
@@ -570,6 +578,10 @@ def execute_system_action(command):
             # If current active document is this invoice, reset it
             if st.session_state.active_doc and st.session_state.active_doc.get("invoice_id") == inv_id:
                 st.session_state.active_doc = None
+            if st.session_state.active_invoice and st.session_state.active_invoice.get("invoice_id") == inv_id:
+                st.session_state.active_invoice = None
+            if st.session_state.active_reminder and st.session_state.active_reminder.get("invoice_id") == inv_id:
+                st.session_state.active_reminder = None
                 
         elif action == "draft_reminder":
             invoice_id = command["invoice_id"]
@@ -593,6 +605,7 @@ def execute_system_action(command):
                 # Reminders can attach the overdue invoice PDF if it exists
                 "pdf_path": os.path.join(os.path.dirname(os.path.abspath(__file__)), "active_invoice.pdf")
             }
+            st.session_state.active_reminder = st.session_state.active_doc
             st.session_state.db_action_msg = f"✉️ Drafted payment reminder ({tone_tier} tone) for Invoice **{inv_num}**."
             
     except Exception as e:
@@ -779,263 +792,284 @@ Action structures:
 with col_canvas:
     st.subheader("Live Ledger & Compiler Canvas")
     
-    tab_preview, tab_ledger = st.tabs([
-        "📄 Document Canvas", 
+    tab_proposal, tab_invoice, tab_reminder, tab_ledger = st.tabs([
+        "📄 Proposals", 
+        "💵 Invoices", 
+        "✉️ Reminders",
         "🗄️ Relational Ledger"
     ])
     
-    # ---------------- TAB 1: LIVE DOCUMENT CANVAS PREVIEW ----------------
-    with tab_preview:
-        active = st.session_state.active_doc
-        if not active:
+    # ---------------- TAB 1: PROPOSALS ----------------
+    with tab_proposal:
+        active_prop = st.session_state.active_proposal
+        if not active_prop:
             st.markdown("""
             <div style='text-align: center; padding: 40px; color: #888;'>
-                <h3>No Active Draft Selected</h3>
-                <p>Use the chatbot on the left to draft proposals, calculate invoices, or design payment reminders.</p>
+                <h3>No Active Proposal Draft</h3>
+                <p>Use the chatbot on the left to draft a proposal. It will compile PDF/DOCX templates automatically.</p>
             </div>
             """, unsafe_allow_html=True)
         else:
-            if active["type"] == "proposal":
-                # Render proposal preview (Navy Accent)
-                st.markdown(f"""
-                <div class="proposal-card">
-                    <div class="proposal-header">PROPOSAL PREVIEW: {active['title']}</div>
-                    <p><b>Freelancer:</b> {st.session_state.freelancer_name} ({st.session_state.freelancer_email})</p>
-                    <p><b>Prepared For:</b> Client ID: {active['client_id']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Show Text markdown
-                st.markdown(active["text"])
-                
-                # Action Buttons
-                st.write("---")
-                target_email = st.text_input("Recipient Email Address", value=active.get("client_email", ""), key="prop_email_target")
-                
-                col_d1, col_d2, col_mail = st.columns(3)
-                
-                if os.path.exists(active["pdf_path"]):
-                    with open(active["pdf_path"], "rb") as f:
-                        col_d1.download_button(
-                            label="📥 Download PDF",
-                            data=f.read(),
-                            file_name=f"Proposal_{active['title'].replace(' ', '_')}.pdf",
-                            mime="application/pdf",
-                            key="proposal_pdf_dl"
-                        )
-                if os.path.exists(active["docx_path"]):
-                    with open(active["docx_path"], "rb") as f:
-                        col_d2.download_button(
-                            label="📥 Download Word (.docx)",
-                            data=f.read(),
-                            file_name=f"Proposal_{active['title'].replace(' ', '_')}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            key="proposal_docx_dl"
-                        )
-                        
-                # Email Sender Trigger
-                if col_mail.button("✉️ Send via Gmail", key="send_prop_email", disabled=not target_email.strip()):
-                    with st.spinner("Dispatching proposal files..."):
-                        subj = f"Project Proposal: {active['title']}"
-                        body = f"Hello,\n\nPlease find attached the project proposal for '{active['title']}' compiled professionally.\n\nBest regards,\n{st.session_state.freelancer_name}"
-                        attachments = [active["pdf_path"], active["docx_path"]]
-                        
-                        success, log_msg = mailer.send_gmail(
-                            recipient_email=target_email.strip(),
-                            subject=subj,
-                            body_text=body,
-                            attachment_paths=attachments,
-                            sender_email=st.session_state.gmail_sender,
-                            app_password=st.session_state.gmail_app_pass
-                        )
-                        if success:
-                            st.success(f"Email sent successfully to {target_email.strip()}!")
-                        else:
-                            st.error(f"Failed to dispatch: {log_msg}")
-                            
-            elif active["type"] == "invoice":
-                # Render invoice preview (Burgundy Accent)
-                st.markdown(f"""
-                <div class="invoice-card">
-                    <div class="invoice-header">INVOICE PREVIEW: {active['number']}</div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <b>Billed To:</b> {active['client_name']}<br/>
-                            <b>Email:</b> {active['client_email']}<br/>
-                            <b>Project:</b> {active['project_name']}
-                        </div>
-                        <div style="text-align: right;">
-                            <b>Due Date:</b> <span class="badge-overdue">{active['due_date']}</span><br/>
-                            <b>Freelancer:</b> {st.session_state.freelancer_name}
-                        </div>
+            # Render proposal preview (Navy Accent)
+            st.markdown(f"""
+            <div class="proposal-card">
+                <div class="proposal-header">PROPOSAL PREVIEW: {active_prop['title']}</div>
+                <p><b>Freelancer:</b> {st.session_state.freelancer_name} ({st.session_state.freelancer_email})</p>
+                <p><b>Prepared For:</b> Client ID: {active_prop['client_id']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show Text markdown
+            st.markdown(active_prop["text"])
+            
+            # Action Buttons
+            st.write("---")
+            target_email = st.text_input("Recipient Email Address", value=active_prop.get("client_email", ""), key="prop_email_target")
+            
+            col_d1, col_d2, col_mail = st.columns(3)
+            
+            if os.path.exists(active_prop["pdf_path"]):
+                with open(active_prop["pdf_path"], "rb") as f:
+                    col_d1.download_button(
+                        label="📥 Download PDF",
+                        data=f.read(),
+                        file_name=f"Proposal_{active_prop['title'].replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        key="proposal_pdf_dl"
+                    )
+            if os.path.exists(active_prop["docx_path"]):
+                with open(active_prop["docx_path"], "rb") as f:
+                    col_d2.download_button(
+                        label="📥 Download Word (.docx)",
+                        data=f.read(),
+                        file_name=f"Proposal_{active_prop['title'].replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="proposal_docx_dl"
+                    )
+                    
+            # Email Sender Trigger
+            if col_mail.button("✉️ Send via Gmail", key="send_prop_email", disabled=not target_email.strip()):
+                with st.spinner("Dispatching proposal files..."):
+                    subj = f"Project Proposal: {active_prop['title']}"
+                    body = f"Hello,\n\nPlease find attached the project proposal for '{active_prop['title']}' compiled professionally.\n\nBest regards,\n{st.session_state.freelancer_name}"
+                    attachments = [active_prop["pdf_path"], active_prop["docx_path"]]
+                    
+                    success, log_msg = mailer.send_gmail(
+                        recipient_email=target_email.strip(),
+                        subject=subj,
+                        body_text=body,
+                        attachment_paths=attachments,
+                        sender_email=st.session_state.gmail_sender,
+                        app_password=st.session_state.gmail_app_pass
+                    )
+                    if success:
+                        st.success(f"Email sent successfully to {target_email.strip()}!")
+                    else:
+                        st.error(f"Failed to dispatch: {log_msg}")
+
+    # ---------------- TAB 2: INVOICES ----------------
+    with tab_invoice:
+        active_inv = st.session_state.active_invoice
+        if not active_inv:
+            st.markdown("""
+            <div style='text-align: center; padding: 40px; color: #888;'>
+                <h3>No Active Invoice Draft</h3>
+                <p>Use the chatbot on the left to calculate and compile an invoice.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Render invoice preview (Burgundy Accent)
+            st.markdown(f"""
+            <div class="invoice-card">
+                <div class="invoice-header">INVOICE PREVIEW: {active_inv['number']}</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <b>Billed To:</b> {active_inv['client_name']}<br/>
+                        <b>Email:</b> {active_inv['client_email']}<br/>
+                        <b>Project:</b> {active_inv['project_name']}
+                    </div>
+                    <div style="text-align: right;">
+                        <b>Due Date:</b> <span class="badge-overdue">{active_inv['due_date']}</span><br/>
+                        <b>Freelancer:</b> {st.session_state.freelancer_name}
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
-                
-                # HTML Table Render
-                html_table = f"""
-                <style>
-                .invoice-table {{
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 15px 0;
-                    font-size: 0.95rem;
-                    color: var(--text-color, #1F2937);
-                }}
-                .invoice-table th {{
-                    background-color: #10B981;
-                    color: white;
-                    padding: 10px;
-                    border: 1px solid rgba(128, 128, 128, 0.2);
-                    text-align: left;
-                    font-weight: 600;
-                }}
-                .invoice-table td {{
-                    padding: 10px;
-                    border: 1px solid rgba(128, 128, 128, 0.2);
-                }}
-                .invoice-table tr:nth-child(even) {{
-                    background-color: rgba(128, 128, 128, 0.05);
-                }}
-                </style>
-                <table class="invoice-table">
-                    <thead>
-                        <tr>
-                            <th>Work Description</th>
-                            <th style="text-align: right;">Hours</th>
-                            <th style="text-align: right;">Rate</th>
-                            <th style="text-align: right;">Line Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                """
-                for idx, item in enumerate(active["work_items"]):
-                    hours = item.get("hours", 0)
-                    rate = item.get("rate", 0)
-                    total = hours * rate if hours > 0 else rate
-                    hours_lbl = f"{hours:.2f}" if hours > 0 else "Flat"
-                    html_table += f"""
-                        <tr>
-                            <td>{item.get('description', '')}</td>
-                            <td style="text-align: right;">{hours_lbl}</td>
-                            <td style="text-align: right;">${rate:.2f}</td>
-                            <td style="text-align: right;">${total:.2f}</td>
-                        </tr>
-                    """
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # HTML Table Render
+            html_table = f"""
+            <style>
+            .invoice-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+                font-size: 0.95rem;
+                color: var(--text-color, #1F2937);
+            }}
+            .invoice-table th {{
+                background-color: #10B981;
+                color: white;
+                padding: 10px;
+                border: 1px solid rgba(128, 128, 128, 0.2);
+                text-align: left;
+                font-weight: 600;
+            }}
+            .invoice-table td {{
+                padding: 10px;
+                border: 1px solid rgba(128, 128, 128, 0.2);
+            }}
+            .invoice-table tr:nth-child(even) {{
+                background-color: rgba(128, 128, 128, 0.05);
+            }}
+            </style>
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Work Description</th>
+                        <th style="text-align: right;">Hours</th>
+                        <th style="text-align: right;">Rate</th>
+                        <th style="text-align: right;">Line Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
+            for idx, item in enumerate(active_inv["work_items"]):
+                hours = item.get("hours", 0)
+                rate = item.get("rate", 0)
+                total = hours * rate if hours > 0 else rate
+                hours_lbl = f"{hours:.2f}" if hours > 0 else "Flat"
                 html_table += f"""
-                    </tbody>
-                </table>
+                    <tr>
+                        <td>{item.get('description', '')}</td>
+                        <td style="text-align: right;">{hours_lbl}</td>
+                        <td style="text-align: right;">${rate:.2f}</td>
+                        <td style="text-align: right;">${total:.2f}</td>
+                    </tr>
                 """
-                st.markdown(html_table, unsafe_allow_html=True)
-                
-                # Totals block
-                st.markdown(f"""
-                <div style="text-align: right; padding-right: 10px; margin-bottom: 20px; color: var(--text-color, #1F2937);">
-                    <p style="margin: 3px 0;">Subtotal: <b>${active['subtotal']:.2f}</b></p>
-                    <p style="margin: 3px 0;">Tax ({active['tax_percentage']}%): <b>${active['tax_amount']:.2f}</b></p>
-                    <h3 style="color: #10B981; margin: 5px 0;">Grand Total: ${active['grand_total']:.2f}</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Bank instructions lower panel
-                st.markdown(f"""
-                <div style="background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid #10B981; padding: 12px 15px; border-radius: 4px; font-size: 0.88rem; margin-bottom: 20px; color: var(--text-color, #1F2937);">
-                    <b style="color: #10B981;">PAYMENT DETAILS:</b><br/>
-                    {st.session_state.freelancer_bank}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Action Buttons
-                st.write("---")
-                target_email = st.text_input("Recipient Email Address", value=active.get("client_email", ""), key="inv_email_target")
-                
-                col_d1, col_d2, col_mail = st.columns(3)
-                
-                if os.path.exists(active["pdf_path"]):
-                    with open(active["pdf_path"], "rb") as f:
-                        col_d1.download_button(
-                            label="📥 Download PDF",
-                            data=f.read(),
-                            file_name=f"Invoice_{active['number']}.pdf",
-                            mime="application/pdf",
-                            key="invoice_pdf_dl"
-                        )
-                if os.path.exists(active["docx_path"]):
-                    with open(active["docx_path"], "rb") as f:
-                        col_d2.download_button(
-                            label="📥 Download Word (.docx)",
-                            data=f.read(),
-                            file_name=f"Invoice_{active['number']}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            key="invoice_docx_dl"
-                        )
+            html_table += f"""
+                </tbody>
+            </table>
+            """
+            st.markdown(html_table, unsafe_allow_html=True)
+            
+            # Totals block
+            st.markdown(f"""
+            <div style="text-align: right; padding-right: 10px; margin-bottom: 20px; color: var(--text-color, #1F2937);">
+                <p style="margin: 3px 0;">Subtotal: <b>${active_inv['subtotal']:.2f}</b></p>
+                <p style="margin: 3px 0;">Tax ({active_inv['tax_percentage']}%): <b>${active_inv['tax_amount']:.2f}</b></p>
+                <h3 style="color: #10B981; margin: 5px 0;">Grand Total: ${active_inv['grand_total']:.2f}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Bank instructions lower panel
+            st.markdown(f"""
+            <div style="background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid #10B981; padding: 12px 15px; border-radius: 4px; font-size: 0.88rem; margin-bottom: 20px; color: var(--text-color, #1F2937);">
+                <b style="color: #10B981;">PAYMENT DETAILS:</b><br/>
+                {st.session_state.freelancer_bank}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Action Buttons
+            st.write("---")
+            target_email = st.text_input("Recipient Email Address", value=active_inv.get("client_email", ""), key="inv_email_target")
+            
+            col_d1, col_d2, col_mail = st.columns(3)
+            
+            if os.path.exists(active_inv["pdf_path"]):
+                with open(active_inv["pdf_path"], "rb") as f:
+                    col_d1.download_button(
+                        label="📥 Download PDF",
+                        data=f.read(),
+                        file_name=f"Invoice_{active_inv['number']}.pdf",
+                        mime="application/pdf",
+                        key="invoice_pdf_dl"
+                    )
+            if os.path.exists(active_inv["docx_path"]):
+                with open(active_inv["docx_path"], "rb") as f:
+                    col_d2.download_button(
+                        label="📥 Download Word (.docx)",
+                        data=f.read(),
+                        file_name=f"Invoice_{active_inv['number']}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="invoice_docx_dl"
+                    )
+                    
+            # Email Sender Trigger
+            if col_mail.button("✉️ Send via Gmail", key="send_inv_email", disabled=not target_email.strip()):
+                with st.spinner("Dispatching invoice files..."):
+                    subj = f"Invoice {active_inv['number']} from {st.session_state.freelancer_name}"
+                    body = f"Dear Client,\n\nPlease find attached invoice {active_inv['number']} in the amount of ${active_inv['grand_total']:.2f}.\n\nPayment Details:\n{st.session_state.freelancer_bank}\n\nThank you,\n{st.session_state.freelancer_name}"
+                    attachments = [active_inv["pdf_path"], active_inv["docx_path"]]
+                    
+                    success, log_msg = mailer.send_gmail(
+                        recipient_email=target_email.strip(),
+                        subject=subj,
+                        body_text=body,
+                        attachment_paths=attachments,
+                        sender_email=st.session_state.gmail_sender,
+                        app_password=st.session_state.gmail_app_pass
+                    )
+                    if success:
+                        st.success(f"Email sent successfully to {target_email.strip()}!")
+                    else:
+                        st.error(f"Failed to dispatch: {log_msg}")
+
+    # ---------------- TAB 3: REMINDERS ----------------
+    with tab_reminder:
+        active_rem = st.session_state.active_reminder
+        if not active_rem:
+            st.markdown("""
+            <div style='text-align: center; padding: 40px; color: #888;'>
+                <h3>No Active Reminder Draft</h3>
+                <p>Use the chatbot on the left to draft payment reminders for overdue accounts.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Render payment reminder text (Amber/Orange accent)
+            st.markdown(f"""
+            <div class="reminder-card">
+                <div class="reminder-header">PAYMENT REMINDER EMAIL: TIER {active_rem['tone_tier'].upper()}</div>
+                <p><b>To:</b> {active_rem['recipient_email']}</p>
+                <p><b>Subject:</b> {active_rem['subject']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show drafted reminder body
+            st.text_area("Email Draft Body", active_rem["text"], height=200, disabled=True)
+            
+            # Action Buttons
+            st.write("---")
+            target_email = st.text_input("Recipient Email Address", value=active_rem.get("recipient_email", ""), key="rem_email_target")
+            
+            col_back, col_send = st.columns([2, 1])
+            
+            # Send reminder email via Gmail
+            if col_send.button("🚀 Send Email Now", key="send_reminder_email", disabled=not target_email.strip()):
+                with st.spinner("Sending payment reminder..."):
+                    attachments = []
+                    if os.path.exists(active_rem["pdf_path"]):
+                        attachments.append(active_rem["pdf_path"])
                         
-                # Email Sender Trigger
-                if col_mail.button("✉️ Send via Gmail", key="send_inv_email", disabled=not target_email.strip()):
-                    with st.spinner("Dispatching invoice files..."):
-                        subj = f"Invoice {active['number']} from {st.session_state.freelancer_name}"
-                        body = f"Dear Client,\n\nPlease find attached invoice {active['number']} in the amount of ${active['grand_total']:.2f}.\n\nPayment Details:\n{st.session_state.freelancer_bank}\n\nThank you,\n{st.session_state.freelancer_name}"
-                        attachments = [active["pdf_path"], active["docx_path"]]
-                        
-                        success, log_msg = mailer.send_gmail(
+                    success, log_msg = mailer.send_gmail(
+                        recipient_email=target_email.strip(),
+                        subject=active_rem["subject"],
+                        body_text=active_rem["text"],
+                        attachment_paths=attachments,
+                        sender_email=st.session_state.gmail_sender,
+                        app_password=st.session_state.gmail_app_pass
+                    )
+                    if success:
+                        # Log the sent reminder in SQLite database
+                        database.create_payment_reminder(
+                            invoice_id=active_rem["invoice_id"],
                             recipient_email=target_email.strip(),
-                            subject=subj,
-                            body_text=body,
-                            attachment_paths=attachments,
-                            sender_email=st.session_state.gmail_sender,
-                            app_password=st.session_state.gmail_app_pass
+                            tone_tier=active_rem["tone_tier"]
                         )
-                        if success:
-                            st.success(f"Email sent successfully to {target_email.strip()}!")
-                        else:
-                            st.error(f"Failed to dispatch: {log_msg}")
-                            
-            elif active["type"] == "reminder":
-                # Render payment reminder text (Amber/Orange accent)
-                st.markdown(f"""
-                <div class="reminder-card">
-                    <div class="reminder-header">PAYMENT REMINDER EMAIL: TIER {active['tone_tier'].upper()}</div>
-                    <p><b>To:</b> {active['recipient_email']}</p>
-                    <p><b>Subject:</b> {active['subject']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Show drafted reminder body
-                st.text_area("Email Draft Body", active["text"], height=200, disabled=True)
-                
-                # Action Buttons
-                st.write("---")
-                target_email = st.text_input("Recipient Email Address", value=active.get("recipient_email", ""), key="rem_email_target")
-                
-                col_back, col_send = st.columns([2, 1])
-                
-                # Send reminder email via Gmail
-                if col_send.button("🚀 Send Email Now", key="send_reminder_email", disabled=not target_email.strip()):
-                    with st.spinner("Sending payment reminder..."):
-                        attachments = []
-                        if os.path.exists(active["pdf_path"]):
-                            attachments.append(active["pdf_path"])
-                            
-                        success, log_msg = mailer.send_gmail(
-                            recipient_email=target_email.strip(),
-                            subject=active["subject"],
-                            body_text=active["text"],
-                            attachment_paths=attachments,
-                            sender_email=st.session_state.gmail_sender,
-                            app_password=st.session_state.gmail_app_pass
-                        )
-                        if success:
-                            # Log the sent reminder in SQLite database
-                            database.create_payment_reminder(
-                                invoice_id=active["invoice_id"],
-                                recipient_email=target_email.strip(),
-                                tone_tier=active["tone_tier"]
-                            )
-                            st.success("Reminder email successfully sent!")
-                            # Reset draft state
-                            st.session_state.active_doc = None
-                        else:
-                            st.error(f"Email dispatch failed: {log_msg}")
+                        st.success("Reminder email successfully sent!")
+                        # Reset draft state
+                        st.session_state.active_reminder = None
+                    else:
+                        st.error(f"Email dispatch failed: {log_msg}")
 
     # ---------------- TAB 2: RELATIONAL DATABASE SUMMARY VIEW ----------------
     with tab_ledger:
