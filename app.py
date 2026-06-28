@@ -48,188 +48,274 @@ st.set_page_config(
 # ================= CUSTOM TYPOGRAPHY & PROFESSIONAL THEME =================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
 
+/* Dynamic zero-gravity space background with aurora-like loops */
 html, body, [data-testid="stAppViewContainer"] {
+    background: radial-gradient(circle at 10% 20%, rgba(155, 93, 229, 0.12), transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.12), transparent 45%),
+                linear-gradient(135deg, #020205 0%, #0a0a0f 60%, #0d0d1e 100%) !important;
+    background-size: 200% 200% !important;
+    animation: auroraShift 25s ease-in-out infinite alternate !important;
     font-family: 'Inter', sans-serif;
+    color: #e2e8f0 !important;
 }
 
 [data-testid="stHeader"] {
-    background: rgba(0,0,0,0);
+    background: rgba(0,0,0,0) !important;
 }
 
-/* Sidebar Custom Typography */
+/* Floating nebulas behind cards */
+[data-testid="stAppViewContainer"]::before {
+    content: "";
+    position: fixed;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+    top: 15%;
+    left: 8%;
+    z-index: -1;
+    animation: floatBob 14s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+[data-testid="stAppViewContainer"]::after {
+    content: "";
+    position: fixed;
+    width: 450px;
+    height: 450px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(155, 93, 229, 0.07) 0%, transparent 70%);
+    bottom: 12%;
+    right: 8%;
+    z-index: -1;
+    animation: floatBob 18s ease-in-out infinite alternate-reverse;
+    pointer-events: none;
+}
+
+@keyframes auroraShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 50% 100%; }
+}
+
+/* Custom Space Typography */
+h1, h2, h3, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    letter-spacing: -0.01em !important;
+    color: #ffffff !important;
+}
+
+/* Sidebar Custom Typography and Styling */
+[data-testid="stSidebar"] {
+    background: rgba(10, 10, 15, 0.6) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
 [data-testid="stSidebar"] .stMarkdown h1, 
 [data-testid="stSidebar"] .stMarkdown h2, 
 [data-testid="stSidebar"] .stMarkdown h3,
 [data-testid="stSidebar"] label {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif !important;
+    color: #ffffff !important;
 }
 
-/* entry fade-in animations for smooth dynamic experience */
+/* Weightless float keyframes */
+@keyframes floatBob {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes floatBobAlt {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(-0.5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Card entry fade-in */
 @keyframes fadeInEntry {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(16px) scale(0.98);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* Card layout systems */
+/* Glassmorphism Bento-style Cards */
 .proposal-card {
-    border-left: 5px solid #4F46E5; /* Modern Indigo */
-    background-color: var(--secondary-background-color, #FFFFFF);
-    color: var(--text-color, #1F2937);
+    border-left: 5px solid #9b5de5 !important; /* Neon Violet Accent */
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(16px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+    color: #e2e8f0 !important;
     padding: 1.5rem;
-    border-radius: 8px;
-    border-top: 1px solid rgba(128, 128, 128, 0.15);
-    border-right: 1px solid rgba(128, 128, 128, 0.15);
-    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 8px 32px 0 rgba(155, 93, 229, 0.06) !important;
     margin-bottom: 1.5rem;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
-    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: floatBob 7s ease-in-out infinite, fadeInEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .proposal-card p, .proposal-card b, .proposal-card strong, .proposal-card li, .proposal-card span:not([class^="badge-"]) {
-    color: var(--text-color, #1F2937) !important;
+    color: #e2e8f0 !important;
 }
 .proposal-card:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.15);
-    border-color: rgba(79, 70, 229, 0.3);
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 16px 40px 0 rgba(155, 93, 229, 0.18) !important;
+    border-color: rgba(155, 93, 229, 0.4) !important;
 }
 .proposal-header {
-    color: #4F46E5 !important;
-    font-family: 'Outfit', sans-serif;
+    color: #9b5de5 !important;
+    font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 700;
     font-size: 1.35rem;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(155, 93, 229, 0.2);
 }
 
 .invoice-card {
-    border-left: 5px solid #10B981; /* Modern Emerald */
-    background-color: var(--secondary-background-color, #FFFFFF);
-    color: var(--text-color, #1F2937);
+    border-left: 5px solid #00d4ff !important; /* Electric Blue Accent */
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(16px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+    color: #e2e8f0 !important;
     padding: 1.5rem;
-    border-radius: 8px;
-    border-top: 1px solid rgba(128, 128, 128, 0.15);
-    border-right: 1px solid rgba(128, 128, 128, 0.15);
-    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.06) !important;
     margin-bottom: 1.5rem;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
-    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: floatBobAlt 8s ease-in-out infinite, fadeInEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .invoice-card p, .invoice-card b, .invoice-card strong, .invoice-card li, .invoice-card span:not([class^="badge-"]) {
-    color: var(--text-color, #1F2937) !important;
+    color: #e2e8f0 !important;
 }
 .invoice-card:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 16px 40px 0 rgba(0, 212, 255, 0.18) !important;
+    border-color: rgba(0, 212, 255, 0.4) !important;
 }
 .invoice-header {
-    color: #10B981 !important;
-    font-family: 'Outfit', sans-serif;
+    color: #00d4ff !important;
+    font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 700;
     font-size: 1.35rem;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
 }
 
 .reminder-card {
-    border-left: 5px solid #F59E0B; /* Modern Amber */
-    background-color: var(--secondary-background-color, #FFFFFF);
-    color: var(--text-color, #1F2937);
+    border-left: 5px solid #ff007f !important; /* Neon Pink Accent */
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(16px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+    color: #e2e8f0 !important;
     padding: 1.2rem;
-    border-radius: 8px;
-    border-top: 1px solid rgba(128, 128, 128, 0.15);
-    border-right: 1px solid rgba(128, 128, 128, 0.15);
-    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 8px 32px 0 rgba(255, 0, 127, 0.06) !important;
     margin-bottom: 1.5rem;
-    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: floatBob 6s ease-in-out infinite, fadeInEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .reminder-card p, .reminder-card b, .reminder-card strong, .reminder-card li, .reminder-card span:not([class^="badge-"]) {
-    color: var(--text-color, #1F2937) !important;
+    color: #e2e8f0 !important;
+}
+.reminder-card:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    box-shadow: 0 16px 40px 0 rgba(255, 0, 127, 0.18) !important;
+    border-color: rgba(255, 0, 127, 0.4) !important;
 }
 .reminder-header {
-    color: #D97706 !important;
-    font-family: 'Outfit', sans-serif;
+    color: #ff007f !important;
+    font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 700;
     font-size: 1.25rem;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.5rem;
     margin-bottom: 0.75rem;
+    text-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
 }
 
 /* Badge status indicators */
 .badge-paid {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #10B981;
-    padding: 0.2rem 0.6rem;
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10B981 !important;
+    padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
 }
 .badge-unpaid {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: #D97706;
-    padding: 0.2rem 0.6rem;
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #F59E0B !important;
+    padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
 }
 .badge-overdue {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #EF4444;
-    padding: 0.2rem 0.6rem;
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #EF4444 !important;
+    padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
 }
 
-/* Chat Bubbles */
+/* Futuristic Space Chat Bubbles */
 .chat-bubble-user {
-    background-color: #3B82F6; /* Brand Blue */
+    background: linear-gradient(135deg, #9b5de5, #4F46E5) !important;
     color: #FFFFFF !important;
-    padding: 0.75rem 1rem;
-    border-radius: 12px 12px 0 12px;
-    margin-bottom: 0.75rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: 16px 16px 0 16px;
+    margin-bottom: 0.85rem;
     max-width: 80%;
     margin-left: auto;
     font-size: 0.95rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    animation: fadeInEntry 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    box-shadow: 0 4px 15px rgba(155, 93, 229, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    animation: fadeInEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .chat-bubble-user * {
     color: #FFFFFF !important;
 }
 .chat-bubble-assistant {
-    background-color: var(--secondary-background-color, #FFFFFF);
-    color: var(--text-color, #2D3748);
-    padding: 1rem 1.25rem;
-    border-radius: 12px 12px 12px 0;
-    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: #e2e8f0 !important;
+    padding: 1.1rem 1.35rem;
+    border-radius: 16px 16px 16px 0;
+    margin-bottom: 0.85rem;
     max-width: 85%;
     margin-right: auto;
     font-size: 0.95rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-    border: 1px solid rgba(128, 128, 128, 0.2);
-    line-height: 1.5;
-    animation: fadeInEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    line-height: 1.55;
+    animation: fadeInEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .chat-bubble-assistant p, .chat-bubble-assistant b, .chat-bubble-assistant strong, .chat-bubble-assistant span, .chat-bubble-assistant li {
-    color: var(--text-color, #2D3748) !important;
+    color: #e2e8f0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
