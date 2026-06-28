@@ -406,6 +406,189 @@ if "active_reminder" not in st.session_state:
 if "db_action_msg" not in st.session_state:
     st.session_state.db_action_msg = None
 
+# Startup connection check popup modal
+if "startup_check_shown" not in st.session_state:
+    st.session_state.startup_check_shown = False
+
+if not st.session_state.startup_check_shown:
+    openai_ok = bool(st.session_state.openai_api_key)
+    gmail_ok = bool(st.session_state.gmail_sender and st.session_state.gmail_app_pass)
+    
+    openai_class = "status-connected" if openai_ok else "status-missing"
+    openai_text = "Connected" if openai_ok else "Missing"
+    
+    gmail_class = "status-connected" if gmail_ok else "status-missing"
+    gmail_text = "Connected" if gmail_ok else "Missing"
+    
+    st.markdown("""
+    <style>
+    /* Startup Modal Overlay */
+    .startup-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(2, 2, 5, 0.85);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        z-index: 99999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeInModal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Modal Content Card */
+    .startup-modal-content {
+        background: rgba(10, 10, 15, 0.7);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        box-shadow: 0 0 50px rgba(0, 212, 255, 0.15), inset 0 0 30px rgba(0, 212, 255, 0.05);
+        border-radius: 20px;
+        padding: 35px;
+        width: 450px;
+        max-width: 90%;
+        position: relative;
+        overflow: hidden;
+        color: #e2e8f0;
+        font-family: 'Inter', sans-serif;
+        animation: scaleInModal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Scanning line animation */
+    .scanner-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+        animation: scanLine 3s linear infinite;
+        opacity: 0.7;
+    }
+
+    @keyframes scanLine {
+        0% { top: 0%; }
+        50% { top: 100%; }
+        100% { top: 0%; }
+    }
+
+    @keyframes fadeInModal {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleInModal {
+        from { transform: scale(0.9) translateY(20px); }
+        to { transform: scale(1) translateY(0); }
+    }
+
+    /* Status Row */
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-label {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        color: #a0aec0;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-connected {
+        background: rgba(16, 185, 129, 0.12) !important;
+        color: #10B981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .status-missing {
+        background: rgba(239, 68, 68, 0.12) !important;
+        color: #EF4444 !important;
+        border: 1px solid rgba(239, 68, 68, 0.25) !important;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .startup-btn-container {
+        position: fixed;
+        top: 66%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100000;
+        width: 250px;
+    }
+    .startup-btn-container button {
+        background: linear-gradient(135deg, #00d4ff, #9b5de5) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 10px 25px !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: bold !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    .startup-btn-container button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 25px rgba(0, 212, 255, 0.5) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="startup-modal-overlay">
+        <div class="startup-modal-content" style="padding-bottom: 90px;">
+            <div class="scanner-line"></div>
+            <h2 style="font-family: 'Space Grotesk', sans-serif; color: #00d4ff; text-align: center; margin-top: 0; text-shadow: 0 0 10px rgba(0, 212, 255, 0.4); font-size: 1.5rem;">
+                SYSTEM BOOT SEQUENCE
+            </h2>
+            <p style="text-align: center; color: #8892b0; font-size: 0.85rem; margin-bottom: 25px;">
+                Initializing LancerFlow Operations Orchestrator v1.0.0...
+            </p>
+            
+            <div style="margin-bottom: 25px;">
+                <div class="status-row">
+                    <span class="status-label">OPENAI COGNITIVE ENGINE</span>
+                    <span class="status-badge {openai_class}">{openai_text}</span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">GMAIL SMTP DISPATCHER</span>
+                    <span class="status-badge {gmail_class}">{gmail_text}</span>
+                </div>
+            </div>
+            
+            <div style="font-size: 0.8rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 25px; line-height: 1.5; color: #a0aec0; font-family: monospace;">
+                <span style="color: #9b5de5;">[SYS]</span> Gravitational compensators: ACTIVE<br/>
+                <span style="color: #9b5de5;">[SYS]</span> Zero-gravity styling layer: ACTIVE<br/>
+                <span style="color: #9b5de5;">[SYS]</span> Core database engine: ONLINE
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    btn_col_1, btn_col_2, btn_col_3 = st.columns([1, 1, 1])
+    with btn_col_2:
+        st.markdown('<div class="startup-btn-container">', unsafe_allow_html=True)
+        if st.button("🚀 Enter Dashboard", key="close_startup_modal", use_container_width=True):
+            st.session_state.startup_check_shown = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
 
 # ================= RULE-BASE MARKDOWN INJECTORS =================
 def load_workspace_skills():
