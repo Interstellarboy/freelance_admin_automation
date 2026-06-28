@@ -623,48 +623,6 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Credentials Status Summary
-    openai_key_status = "🟢 Configured" if st.session_state.openai_api_key else "🔴 Missing"
-    gmail_creds_status = "🟢 Configured" if st.session_state.gmail_sender and st.session_state.gmail_app_pass else "🔴 Missing"
-    
-    st.subheader("System Status")
-    st.markdown(f"""
-    * **OpenAI API Key**: {openai_key_status}
-    * **Gmail SMTP**: {gmail_creds_status}
-    """)
-    
-    # Collapsible Settings Expander
-    with st.expander("⚙️ Credentials & Settings", expanded=False):
-        st.subheader("System Credentials")
-        st.text_input("OpenAI API Key", type="password", key="openai_api_key")
-        st.text_input("OpenAI Model", key="openai_model")
-        
-        st.subheader("Gmail Mailer Credentials")
-        st.text_input("Gmail Sender Address", key="gmail_sender")
-        st.text_input("Gmail App Password (16 chars)", type="password", key="gmail_app_pass")
-        
-        st.subheader("Freelancer Defaults")
-        st.text_input("Freelancer Business Name", key="freelancer_name")
-        st.text_input("Freelancer Contact Email", key="freelancer_email")
-        st.text_area("Freelancer Payment (Bank) Info", key="freelancer_bank", height=80)
-        
-        if st.button("💾 Save Settings to .env", use_container_width=True):
-            success, msg = save_settings_to_env(
-                st.session_state.openai_api_key,
-                st.session_state.openai_model,
-                st.session_state.gmail_sender,
-                st.session_state.gmail_app_pass,
-                st.session_state.freelancer_name,
-                st.session_state.freelancer_email,
-                st.session_state.freelancer_bank
-            )
-            if success:
-                st.success(msg)
-            else:
-                st.error(msg)
-                
-    st.markdown("---")
-    
     # Active Workspace Skills Visual Indicator
     st.subheader("Loaded Skill Modules")
     skills = load_workspace_skills()
