@@ -42,7 +42,7 @@ FREELANCER_BANK_DETAILS={freelancer_bank}
 st.set_page_config(
     page_title="Freelancer Admin Automation Assistant",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ================= CUSTOM TYPOGRAPHY & PROFESSIONAL THEME =================
@@ -106,20 +106,11 @@ h1, h2, h3, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownCont
     color: #ffffff !important;
 }
 
-/* Sidebar Custom Typography and Styling */
-[data-testid="stSidebar"] {
-    background: rgba(10, 10, 15, 0.6) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+/* Completely hide Sidebar and Sidebar Toggle arrow button */
+[data-testid="stSidebar"], [data-testid="collapsedControl"] {
+    display: none !important;
 }
-[data-testid="stSidebar"] .stMarkdown h1, 
-[data-testid="stSidebar"] .stMarkdown h2, 
-[data-testid="stSidebar"] .stMarkdown h3,
-[data-testid="stSidebar"] label {
-    font-family: 'Space Grotesk', sans-serif !important;
-    color: #ffffff !important;
-}
+/* Sidebar hidden */
 
 /* Weightless float keyframes */
 @keyframes floatBob {
@@ -597,29 +588,7 @@ def execute_system_action(command):
         st.session_state.db_action_msg = f"❌ Error executing command: {str(e)}\n{traceback.format_exc()}"
 
 
-# ================= SIDEBAR LAYOUT (SETTINGS & STATUS) =================
-if os.path.exists("logo.jpg"):
-    st.sidebar.image("logo.jpg", use_container_width=True)
-elif os.path.exists("masaiboyz.png"):
-    st.sidebar.image("masaiboyz.png", width=120)
-else:
-    st.sidebar.title("🧙‍♂️ LancerFlow Automator")
-
-with st.sidebar:
-    
-    pass
-    
-    # Active Workspace Skills Visual Indicator
-    st.subheader("Loaded Skill Modules")
-    skills = load_workspace_skills()
-    for name, skill_content in skills.items():
-        if "Error" in skill_content or "not found" in skill_content:
-            st.markdown(f"🔴 **{name.replace('_', ' ').title()}** (Missing)")
-        else:
-            st.markdown(f"🟢 **{name.replace('_', ' ').title()}** (Injected)")
-            
-    st.markdown("---")
-    st.info("💡 Try asking me to: \n- *'Create a proposal for Stark Industries'*\n- *'Generate invoice INV-002 for project Website Redesign'*\n- *'Review overdue accounts and draft payment reminders'*\n- *'Mark invoice INV-003 as paid'*")
+# Sidebar completely removed
 
 
 # ================= MAIN PAGE SPLIT-SCREEN LAYOUT =================
