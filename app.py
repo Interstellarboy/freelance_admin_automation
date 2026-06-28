@@ -508,34 +508,24 @@ if not st.session_state.startup_check_shown:
     }
     </style>""", unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="boot-card">
-        <div class="scanner-line"></div>
-        <h2 style="font-family: 'Space Grotesk', sans-serif; color: #00d4ff; text-align: center; margin-top: 0; text-shadow: 0 0 10px rgba(0, 212, 255, 0.4); font-size: 1.5rem;">
-            SYSTEM BOOT SEQUENCE
-        </h2>
-        <p style="text-align: center; color: #8892b0; font-size: 0.85rem; margin-bottom: 25px;">
-            Initializing LancerFlow Operations Orchestrator v1.0.0...
-        </p>
-        
-        <div style="margin-bottom: 25px;">
-            <div class="status-row">
-                <span class="status-label">OPENAI COGNITIVE ENGINE</span>
-                <span class="status-badge {openai_class}">{openai_text}</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">GMAIL SMTP DISPATCHER</span>
-                <span class="status-badge {gmail_class}">{gmail_text}</span>
-            </div>
-        </div>
-        
-        <div style="font-size: 0.8rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; color: #a0aec0; font-family: monospace;">
-            <span style="color: #9b5de5;">[SYS]</span> Gravitational compensators: ACTIVE<br/>
-            <span style="color: #9b5de5;">[SYS]</span> Zero-gravity styling layer: ACTIVE<br/>
-            <span style="color: #9b5de5;">[SYS]</span> Core database engine: ONLINE
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    import textwrap
+    boot_html = textwrap.dedent(f"""
+<div class="boot-card">
+<div class="scanner-line"></div>
+<h2 style="font-family:'Space Grotesk',sans-serif;color:#00d4ff;text-align:center;margin-top:0;text-shadow:0 0 10px rgba(0,212,255,0.4);font-size:1.5rem;">SYSTEM BOOT SEQUENCE</h2>
+<p style="text-align:center;color:#8892b0;font-size:0.85rem;margin-bottom:25px;">Initializing LancerFlow Operations Orchestrator v1.0.0...</p>
+<div style="margin-bottom:25px;">
+<div class="status-row"><span class="status-label">OPENAI COGNITIVE ENGINE</span><span class="status-badge {openai_class}">{openai_text}</span></div>
+<div class="status-row"><span class="status-label">GMAIL SMTP DISPATCHER</span><span class="status-badge {gmail_class}">{gmail_text}</span></div>
+</div>
+<div style="font-size:0.8rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;border-radius:8px;margin-bottom:10px;line-height:1.5;color:#a0aec0;font-family:monospace;">
+<span style="color:#9b5de5;">[SYS]</span> Gravitational compensators: ACTIVE<br/>
+<span style="color:#9b5de5;">[SYS]</span> Zero-gravity styling layer: ACTIVE<br/>
+<span style="color:#9b5de5;">[SYS]</span> Core database engine: ONLINE
+</div>
+</div>
+""")
+    st.markdown(boot_html, unsafe_allow_html=True)
     
     # Center the enter button right under the card
     btn_col_1, btn_col_2, btn_col_3 = st.columns([1.3, 1, 1.3])
